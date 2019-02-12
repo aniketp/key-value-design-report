@@ -123,14 +123,13 @@ Main Purpose: To maintain Confidentiality and Integrity of data without any rega
 	\itemsep0em
 	\item Follow the method given in LoadFile() to reach, decrypt and verify the signature of the $SharingRecord\_r$ structure corresponding to "filename". \textbf{IMP} Verify if the user is present in Collaborators.
 	\item Collect the address and AES-CFB encryption key of $SharingRecord\_r$ structure from the respective Inode. Recieve the Public key of receiver from the Public Key Server.
-	\item $sharing = PrivKey_{User}(PubKey_{recipient}(Collected Info))$, to maintain confidentiality and integrity in case of a \textbf{Man in the Middle attack} while sharing the message offline.
+	\item $sharing = PubKey_{recipient}(PrivKey_{user}(Hash(Collected Info)) + (Collected Info))$, to maintain confidentiality and integrity in case of a \textbf{Man in the Middle attack} while sharing the message offline.
 \end{enumerate}
 
 \subsection{(User) ReceiveFile (filename string, sender string, msgid string)}
 \begin{enumerate}
 	\itemsep0em
-	\item Decrypt "msgid" using Private Key of User, verify the integrity using Public Key of Sender. Obtain the Address and "key" for CFB-Decryption of SharingRecord structure of the concerned data(value).
-	\item \textbf{IMP} Check if the sender is in Collaborators. If so, proceed ahead.
+	\item Decrypt "msgid" using Private Key of User, verify the integrity using Public Key of Sender. Obtain the Address and "key" for CFB-Decryption of SharingRecord structure of the concerned data(value). \textbf{IMP} Check if the sender is in Collaborators. If so, proceed ahead.
 	\item Create an Inode for the receiver user using Argon2Key, with the method described in StoreFile(). Store the info in the Inode, store the RSA signature and encrypt $Inode\_r$ structure with Public key of User. Return.
 \end{enumerate}
 
