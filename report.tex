@@ -22,7 +22,7 @@
 % \todo[inline]{Add diagram here}
 
 \title{\vspace{40mm}CS628 Assignment 1 \\ $2018\text{-}19$  II Semester \\ \vspace{1cm} \textbf{Design Report for Secure Key-Value File Sharing}}
-\subtitle{\includegraphics[width=\textwidth, height=7cm]{cs628.png}\vspace{20mm}}
+\subtitle{\includegraphics[width=\textwidth, height=7cm]{images/cs628.png}\vspace{20mm}}
 \author{Aniket Pandey $(160113)$ $\cdot$ Ashish Kumar $(160160)$}
 \date{\today}
 
@@ -57,7 +57,7 @@ Main Purpose: To maintain Confidentiality and Integrity of data without any rega
 \end{center}
 
 \begin{center}
-	\includegraphics[width=7cm, height=5cm]{user.png}
+	\includegraphics[width=7cm, height=5cm]{images/user.png}
 \end{center}
 
 \columnbreak
@@ -67,7 +67,7 @@ Main Purpose: To maintain Confidentiality and Integrity of data without any rega
 \end{center}
 
 \begin{center}
-	\includegraphics[width=7cm, height=5cm]{inode.png}
+	\includegraphics[width=7cm, height=5cm]{images/inode.png}
 \end{center}
 
 \end{multicols}
@@ -100,6 +100,28 @@ Main Purpose: To maintain Confidentiality and Integrity of data without any rega
 	\item Again generate a random address (key) and AES-CFB key for storing and encrypting the $Data\_r$ structure. Store these in the relevant fields of SharingRecord structure. Sign with a predecided HMAC key and store in $SharingRecord_r.Signature$ field. Encrypt the Structure with the key decided at $Inode_r$ and push to Data Server.
 	\item Store the "data" at The key generated above, Encrypt it with CFBEncrypter() method. Sign it and store the data at the "key". Push to Data Server and return. 
 \end{enumerate}
+
+\begin{multicols}{2}
+
+\begin{center}
+	\textbf{SharingRecord Structure}
+\end{center}
+
+\begin{center}
+	\includegraphics[width=7cm, height=6cm]{images/sharing.png}
+\end{center}
+
+\columnbreak
+
+\begin{center}
+	\textbf{User Structure}
+\end{center}
+
+\begin{center}
+	\includegraphics[width=7cm, height=6cm]{images/data.png}
+\end{center}
+
+\end{multicols}
 
 \subsection{(User) LoadFile (filename string)}
 \begin{enumerate}
