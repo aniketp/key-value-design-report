@@ -7,8 +7,9 @@
 \pagestyle{fancy}
 \setlength{\headheight}{30pt}
 \setlength{\parindent}{10pt}
+\setlist{nolistsep}
 
-%\titlespacing{\subsection}{0pt}{4pt}{4pt}
+%\titlespacing{\subsection}{0pt}{10pt}{8pt}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %Fill in the appropriate information below
@@ -21,12 +22,9 @@
 
 \subsection*{Property 1 and 2: User creation and authentication}
 \textbf{5 Points} No Apparent Vulnerabilty
-\vspace{-0.2cm}
-
 
 \subsection*{Property 3: Integrity preservation in the simple secure client}
-\textbf{1 Point}
-\vspace{-0.2cm}
+\textbf{2 Points}
 
 \begin{itemize}[wide=0pt, noitemsep]
 	\itemsep0em
@@ -37,21 +35,18 @@
 
 \subsection*{Property 4: Confidentiality in the simple secure client}
 \textbf{4 Points}
-\vspace{-0.2cm}
 
 \begin{itemize}[wide=0pt, noitemsep]
 	\itemsep0em
-		\item The unencrypted \textit{username-User} look-up table leaks the number of users registered and the location of User structs.
+	\item The unencrypted \textit{username-User} look-up table leaks the number of users registered and the location of User structs.
 	\item The unencrypted \textit{username filename-File} look-up table leaks the total number of files and their individual locations.
 \end{itemize}
 
 \subsection*{Property 5: AppendFile implementation and efficiency}
-\textbf{5 Points:} No apparent vulnerability
-\vspace{-0.2cm}
+\textbf{5 Points:} No apparent vulnerability. \textit{AppendFile()} is adequately efficient.
 
 \subsection*{Property 6: Sharing implementation}
 \textbf{4 Points}
-\vspace{-0.2cm}
 
 \begin{itemize}[wide=0pt, noitemsep]
 	\itemsep0em
@@ -59,18 +54,15 @@
 \end{itemize}
 
 \subsection*{Property 7: Revocation implementation}
-\textbf{5 Points:}  No apparent vulnerability
-\vspace{-0.2cm}
-	
+\textbf{5 Points:}  No apparent vulnerability.	
 
 \subsection*{Overall: Clarity of Design Document}
 \textbf{4 Points}
-\vspace{-0.2cm}
 
 \begin{itemize}[wide=0pt, noitemsep]
 	\itemsep0em
-	\item The design greatly exceeds 2 page limit, could have been restricted with simple \LaTeX \\ hacks.
-	\item \textit{User structure is stored in DataStore using needed fields.} But how is the key generated?
+	\item The design incorrectly interprets the use of HMAC to generate keys and IVs, rather than verifying the integrity. Also, the arguments to functions are not specified properly, giving a vague idea about the implementation on multiple occasions.
+	\item There is no explanation about the unused \textit{File.hash\_locations[]} field and the unnecessary map of Public keys in User struct, when only Private Key mapping was sufficient. 
 \end{itemize}
 
 
