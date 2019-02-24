@@ -1,0 +1,78 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Do not alter this block of commands.  If you're proficient at LaTeX, you may include additional packages, create macros, etc. immediately below this block of commands, but make sure to NOT alter the header, margin, and comment settings here. 
+\documentclass[12pt]{article}
+ \usepackage[margin=1in]{geometry} 
+ \usepackage{titlesec}
+\usepackage{amsmath,amsthm,amssymb,amsfonts, enumitem, fancyhdr, color, comment, graphicx, environ}
+\pagestyle{fancy}
+\setlength{\headheight}{30pt}
+\setlength{\parindent}{10pt}
+
+%\titlespacing{\subsection}{0pt}{4pt}{4pt}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%Fill in the appropriate information below
+\lhead{\vspace{-0.5cm} \textbf{CS628A Assignment 1 (Part 2)} \\ Design Review of \textbf{Abhishek Yadav}, \textbf{Naman Jain} \\ \vspace{0.3cm} \textbf{Reviewers}: Aniket Pandey (160113), Ashish Kumar (160160)}  %replace with your name
+%\rhead{Math XYZ } %replace XYZ with the homework course number, semester (e.g. ``Spring 2019"), and assignment number.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\begin{document}
+
+\subsection*{Property 1 and 2: User creation and authentication}
+\textbf{5 Points} No Apparent Vulnerabilty
+\vspace{-0.2cm}
+
+
+\subsection*{Property 3: Integrity preservation in the simple secure client}
+\textbf{1 Point}
+\vspace{-0.2cm}
+
+\begin{itemize}[wide=0pt, noitemsep]
+	\itemsep0em
+	\item There is no integrity check in case of \textit{User} structures. A random manipulation can change any underlying field resulting in an incorrect authentication later on.
+	\item Method of checking the integrity of \textit{struct File} during \textit{LoadFile()} is weak. Its possible that a tamper changes everything apart from stored "Public Key".
+	\item \textbf{Key Value Swap Attack:} An adversary whose access to a file was earlier revoked, can still swap multiple blocks of file\_data corresponding to a file, resulting in incorrect order for next \textit{LoadFile()} invocation.
+\end{itemize}
+
+\subsection*{Property 4: Confidentiality in the simple secure client}
+\textbf{4 Points}
+\vspace{-0.2cm}
+
+\begin{itemize}[wide=0pt, noitemsep]
+	\itemsep0em
+		\item The unencrypted \textit{username-User} look-up table leaks the number of users registered and the location of User structs.
+	\item The unencrypted \textit{username filename-File} look-up table leaks the total number of files and their individual locations.
+\end{itemize}
+
+\subsection*{Property 5: AppendFile implementation and efficiency}
+\textbf{5 Points:} No apparent vulnerability
+\vspace{-0.2cm}
+
+\subsection*{Property 6: Sharing implementation}
+\textbf{4 Points}
+\vspace{-0.2cm}
+
+\begin{itemize}[wide=0pt, noitemsep]
+	\itemsep0em
+	\item There is no encryption of the auth token to be shared through a medium susceptible to \textit{Man in the Middle attack}. Hence, an adversary can learn about the location of shared file and lauch a personalized attack.
+\end{itemize}
+
+\subsection*{Property 7: Revocation implementation}
+\textbf{5 Points:}  No apparent vulnerability
+\vspace{-0.2cm}
+	
+
+\subsection*{Overall: Clarity of Design Document}
+\textbf{4 Points}
+\vspace{-0.2cm}
+
+\begin{itemize}[wide=0pt, noitemsep]
+	\itemsep0em
+	\item The design greatly exceeds 2 page limit, could have been restricted with simple \LaTeX \\ hacks.
+	\item \textit{User structure is stored in DataStore using needed fields.} But how is the key generated?
+\end{itemize}
+
+
+\end{document}
+

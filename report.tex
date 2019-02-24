@@ -96,8 +96,8 @@ top=15mm,}
 	\itemsep0em
 	\item Obtain $key = Argon2Key(<password>+<filename>", "<username>+<filename", 10)$. This will generate a 36 character key. This is where the Inode structure for "Username"-"Filename" will be stored (Refer to the figure).
 	\item Generate a random address (key) and AES-CFB key for storing and encrypting SharingRecord\_r structure respectively. Fill the Inode structure. Sign it using Author's Private key and store RSA signature in $Inode\_r.Signature$. Encrypt $Inode\_r$ with Author's Public key. Push (key, encrypted Inode\_r) to Data Server.
-	\item Check if a $SharingRecord\_r$ structure exists. If it exists, delete all the existing data blocks and write the new data. Else, initialize a new $SharingRecord\_r$ object.
-	\item Again generate a random address (key) and AES-CFB key for storing and encrypting the $Data\_r$ structure. Store these in the relevant fields of SharingRecord structure. Sign with a predecided HMAC key and store in $SharingRecord_r.Signature$ field. Encrypt the Structure with the key decided at $Inode\_r$ and push to Data Server.
+	\item Check if a $SharingRecord\_r$ structure exists. If so, delete all the existing data blocks and write the new data in iterations. Else, initialize a new $SharingRecord\_r$ object.
+	\item Again generate a random address (key) and AES-CFB key for storing and encrypting the $Data\_r$ structure. Store these in the relevant fields of SharingRecord structure. Sign with a predecided HMAC key and store in $SharingRecord\_r.Signature$ field. Encrypt the Structure with the key decided at $Inode\_r$ and push to Data Server.
 	\item Store the "data" at the "key" generated above, Encrypt it with CFBEncrypter() method. Sign it and store the data at the "key". Push to Data Server and return. 
 \end{enumerate}
 
