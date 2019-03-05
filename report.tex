@@ -77,9 +77,10 @@ top=15mm,}
 \begin{enumerate}
 	\itemsep0em
 
-	\item Obtain $key = Argon2Key("<password>+<username>", "<username>+user", 10)$. This will generate a 36 character key. This is where the value (User data) will be stored.
+    \item Obtain $UserAddr = Argon2Key("<password>+<username>", "<username>", 32)$. This will generate a 32 character address. This is where the value (User data) will be stored.
+    \item Generate a new $key = Argon2Key("<username>+<password>", "<username>", 16)$ for symmetric encryption and Hmac Signature. Sign \textit{User\_r.User} with HMAC scheme, store the signature in \textit{User\_r.Signature}. Encrypt the \textit{User\_r} struct data with AES-Cipher Feedback Mode using the same key.
 	\item Generate an RSA Key-pair. Push the public key to the Public Key Server. Store the Private Key along with other fields in User\_r struct.
-	\item Generate a new $key = Argon2Key("<username>+<password>", "<username>", 10)$ for symmetric encryption. Use this key to sign \textit{User\_r.User} with HMAC scheme, store the signature in \textit{User\_r.Signature}. Encrypt the json-marshalled \textit{User\_r} struct data with AES-Cipher Feedback Mode using the same key as above.
+    \item Generate a random 16 byte symmetric key and store in user struct. This key will be used lated to sign and encrypt inode structures.
 	\item Call $DatastoreSet(key, ciphertext)$ to publish the encrypted User information in Data Server.
 \end{enumerate}
 
@@ -87,15 +88,15 @@ top=15mm,}
 \begin{enumerate}
 	\itemsep0em
 
-	\item Get the "key" using above Argon2Key invocation. Errors suggest either incorrect username or password. Calculate the key for CFBDecrypter(), and obtain the decrypted \textit{User\_r} structure.
+	\item Get the "key" and "addr" using above Argon2Key invocation. Errors suggest either incorrect username or password. Calculate the key for CFBDecrypter(), and obtain the decrypted \textit{User\_r} structure.
 	\item Check HMAC hashes of $User\_r.User$ and $User\_r.Signature$ for any tampering. If all checks are satisfied, return the $User\_r.User$ structure.
 \end{enumerate}
 
 \subsection{(User) StoreFile (filename string, data []byte)}
 \begin{enumerate}
 	\itemsep0em
-	\item Obtain $key = Argon2Key(<password>+<filename>", "<username>+<filename", 10)$. This will generate a 36 character key. This is where the Inode structure for "Username"-"Filename" will be stored (Refer to the figure).
-	\item Generate a random address (key) and AES-CFB key for storing and encrypting SharingRecord\_r structure respectively. Fill the Inode structure. Sign it using Author's Private key and store RSA signature in $Inode\_r.Signature$. Encrypt $Inode\_r$ with Author's Public key. Push (key, encrypted Inode\_r) to Data Server.
+	\item Obtain $InodeAddr = SHA256 ( SHA256(<username>+<password>+<filename>) )$. This is where the Inode structure for "Username"-"Filename" will be stored (Refer to the figure).
+	\item Generate a random address (key) and AES-CFB key for storing and encrypting SharingRecord\_r structure respectively. Fill the Inode structure. Sign it using Author's Symmetric key and store HMAC signature in $Inode\_r.Signature$. Encrypt $Inode\_r$ with Author's Symmetric key. Push (key, encrypted Inode\_r) to Data Server.
 	\item Check if a $SharingRecord\_r$ structure exists. If so, delete all the existing data blocks and write the new data in iterations. Else, initialize a new $SharingRecord\_r$ object.
 	\item Again generate a random address (key) and AES-CFB key for storing and encrypting the $Data\_r$ structure. Store these in the relevant fields of SharingRecord structure. Sign with a predecided HMAC key and store in $SharingRecord\_r.Signature$ field. Encrypt the Structure with the key decided at $Inode\_r$ and push to Data Server.
 	\item Store the "data" at the "key" generated above, Encrypt it with CFBEncrypter() method. Sign it and store the data at the "key". Push to Data Server and return. 
@@ -135,7 +136,7 @@ top=15mm,}
 \begin{enumerate}
 	\itemsep0em
 	\item Follow the method given in LoadFile() to reach, decrypt and verify the signature of the $SharingRecord\_r$ structure corresponding to "filename". 
-	\item Create a new $Data\_r$ block and append its generated encryption key and address to the appropriate list of keys and signatures in SharingRecord structure. Push the block to DataStore and return.
+	\item Create a new $Data\_r$ block and append its generated address to the list of addresses in SharingRecord structure. Push the block to DataStore and return.
 	\item \textbf{NOTE:} We are not verifying the integrity of previous data blocks during AppendFile(), considering the unnecessary overhead of re-encryptions/decryptions.
 \end{enumerate}
 
@@ -144,9 +145,9 @@ top=15mm,}
 \subsection{(User) ShareFile (filename string, recipient string)}
 \begin{enumerate}
 	\itemsep0em
-	\item Follow the method given in LoadFile() to reach, decrypt and verify the signature of the $SharingRecord\_r$ structure corresponding to "filename".
+	\item Get Inode and verify its integrity. Pass the SharingRecord Address and key to reciever. 
 	\item $collected\_info = Inode\_r.Inode.(Symmkey + ShRecordAddr)$. Recieve the Public key of receiver from the Public Key Server.
-	\item $sharing = PubKey_{recipient}(PrivKey_{user}(Hash(collected\_info)) + (collected\_info))$, to maintain confidentiality and integrity in case of a \textbf{Man in the Middle attack} while sharing the message offline. Where $PrivKey_{user}(Hash(collected\_info))$ is the signature of $collected\_info$.
+	\item $sharing = PubKey_{recipient}(encrypt(collected\_info)) + PrivKey_{user}(sign(collected\_info))$, to maintain confidentiality and integrity in case of a \textbf{Man in the Middle attack} while sharing the message offline. 
 \end{enumerate}
 
 \subsection{(User) ReceiveFile (filename string, sender string, msgid string)}
@@ -159,9 +160,19 @@ top=15mm,}
 \subsection{(User) RevokeFile (filename string)}
 \begin{enumerate}
 	\itemsep0em
-	\item Go to the SharingRecord structure corresponding to "filename". \textbf{IMP:} After verifying the integrity, check if the User is \textbf{Original-Author} of the "filename". If not, return an error.
-	\item If so, from the Inode of original author, change the encryption key and the address of $SharingRecord\_r$ structure and re-encrypt it with a new key. Similarly, change the address of the actual data ($SharingRecord\_r.Address$).
-	\item Iterate over all data-blocks and re-encrypt them with fresh symmetric keys. Also, store each of them at new addresses. Store these new keys and addresses in the corresponding $SharingRecord\_r$ structure. \textbf{NOTE:} This is to prevent any further misuse by a distrusted user who knows the original keys and addresses of data blocks.
+	\item Go upto the SharingRecord structure corresponding to "filename" and verify integrity.
+	\item From the Inode of User, change the encryption key and the address of $SharingRecord\_r$ structure and re-encrypt it with a new key. Similarly, change the address of the actual data ($SharingRecord\_r.Address$).
+	\item Iterate over all data-blocks and re-encrypt them with fresh symmetric key. Also, store each of them at new addresses. Store these new key and addresses in the corresponding $SharingRecord\_r$ structure. \textbf{NOTE:} This is to prevent any further misuse by a distrusted user who knows the original key and addresses of data blocks.
 \end{enumerate}
+
+\section{Changes}
+
+\begin{enumerate}
+	\itemsep0em
+	\item Previously, we used Asymmetric encryption of Inode struct, given it only holds two values, we now change it to Symmetric encryption, given the encryption and time limit in RSA.  
+	\item The address where we are storing inode was previously generated using Argon2, now we are using two time SHA256, given the high time and resource required by argon2
+	\item Updated few points to increase readability of the document.
+\end{enumerate}
+
 
 \end{document}
